@@ -1,0 +1,9 @@
+/doc/
+/.eunit/
+/.qc/
+/deps/
+*.beam
+*.app
+*.plt
+erl_crash.dump
+*.eqc

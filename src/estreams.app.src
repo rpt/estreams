@@ -1,0 +1,5 @@
+{application, estreams,
+ [{description, "Streams for Erlang"},
+  {vsn, "1.0"},
+  {applications, [kernel,
+                  stdlib]}]}.
