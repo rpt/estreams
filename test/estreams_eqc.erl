@@ -136,18 +136,21 @@ stream() ->
            manipulated_stream()]).
 
 simple_stream() ->
-    oneof([?LET({F, X}, {function1(term()), term()},
+    oneof([finite_stream(),
+           ?LET({F, X}, {function1(term()), term()},
                 {streams:iterate(F, X), infinite}),
            ?LET(Term, term(),
                 {streams:repeat(Term), infinite}),
-           ?LET({Term, N}, {term(), choose(1, ?N)},
-                {streams:replicate(N, Term), N}),
            ?LET(List, non_empty(list(term())),
                 {streams:cycle(List), infinite}),
            {streams:natural(), infinite},
            ?LET(N, choose(1, 1000),
                 {streams:random(N), infinite}),
            {streams:fibonacci(), infinite}]).
+
+finite_stream() ->
+    oneof([?LET({Term, N}, {term(), choose(1, ?N)},
+                {streams:replicate(N, Term), N})]).
 
 manipulated_stream() ->
     oneof([?LET({S, N}, simple_stream(),
@@ -159,6 +162,14 @@ manipulated_stream() ->
                          infinite;
                      N ->
                          N * 2 - 1
+                 end}),
+           ?LET({{S1, N1}, {S2, N2}}, {finite_stream(), simple_stream()},
+                {streams:concat(S1, S2),
+                 case N2 of
+                     infinite ->
+                         infinite;
+                     N2 ->
+                         N1 + N2
                  end})]).
 
 term() ->

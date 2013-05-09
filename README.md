@@ -151,6 +151,32 @@ Inspired by Haskell's infinite lists. Tested with QuickCheck (mini).
     [1,0,2,0,3,0,4,0,5,0]
     ```
 
+ * **concat/1** - Concatenates a list of streams into one stream.
+
+    ``` erlang
+    concat(Ss :: [stream()]) -> S :: stream().
+    ```
+
+    ``` erlang
+    x> Streams = [streams:replicate(5, 0), streams:replicate(5, 1)].
+    [#Fun<streams.x.xxxxxxxx>,#Fun<streams.x.xxxxxxxx>]
+    x> streams:take(10, streams:concat(Streams)).
+    [0,0,0,0,0,1,1,1,1,1]
+    ```
+
+ * **concat/2** - Concatenates two streams into one.
+
+    ``` erlang
+    concat(S1 :: stream(), S2 :: stream()) -> S :: stream().
+    ```
+
+    ``` erlang
+    x> {Stream1, Stream2} = {streams:replicate(5, 0), streams:replicate(5, 1)}.
+    {#Fun<streams.x.xxxxxxxx>,#Fun<streams.x.xxxxxxxx>}
+    x> streams:take(10, streams:concat(Stream1, Stream2)).
+    [0,0,0,0,0,1,1,1,1,1]
+    ```
+
 ### Common streams
 
  * **natural/0** - Returns a stream of natural numbers counting from 1 up.

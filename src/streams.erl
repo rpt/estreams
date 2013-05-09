@@ -35,7 +35,8 @@
 
 %% Manipulate
 -export([map/2,
-         intersperse/2]).
+         intersperse/2,
+         concat/1, concat/2]).
 
 %% Common streams
 -export([natural/0,
@@ -201,8 +202,23 @@ intersperse(X, Stream) ->
 %%             X :: term(), S :: stream()) -> S2 :: stream().
 %% foldr(F, Init, Stream) ->
 
-%% -spec concat(Ss :: [stream()]) -> S :: stream().
-%% concat(Streams) ->
+%% @doc Concatenates a list of streams into one stream.
+-spec concat(Ss :: [stream()]) -> S :: stream().
+concat(Streams) ->
+    C = fun([], _C) ->
+                finish;
+           ([finish | Rest], C) ->
+                C(Rest, C);
+           ([Stream | Rest], C) ->
+                {Value, NewStream} = Stream(),
+                fun() -> {Value, C([NewStream | Rest], C)} end
+        end,
+    C(Streams, C).
+
+%% @doc Concatenates two streams into one.
+-spec concat(S1 :: stream(), S2 :: stream()) -> S :: stream().
+concat(Stream1, Stream2) ->
+    concat([Stream1, Stream2]).
 
 %%------------------------------------------------------------------------------
 %% Common streams
