@@ -28,6 +28,7 @@
 
 -include_lib("eqc/include/eqc.hrl").
 
+-define(N, 100).
 -define(TESTS, 1000).
 
 %%------------------------------------------------------------------------------
@@ -97,13 +98,15 @@ prop_take_stream_elements() ->
     eqc:numtests(
       ?TESTS,
       ?FORALL({Stream, Length}, stream(),
-              case catch streams:take(100, Stream) of
+              case catch streams:take(?N, Stream) of
                   List when is_list(List) ->
                       case Length of
                           infinite ->
-                              length(List) == 100;
-                          N ->
-                              length(List) == N
+                              length(List) == ?N;
+                          N when N =< ?N ->
+                              length(List) == N;
+                          _Else ->
+                              length(List) == ?N
                       end;
                   _Else ->
                       false
@@ -114,17 +117,33 @@ prop_take_stream_elements() ->
 %%------------------------------------------------------------------------------
 
 stream() ->
+    oneof([simple_stream(),
+           manipulated_stream()]).
+
+simple_stream() ->
     oneof([?LET({F, X}, {function1(term()), term()},
                 {streams:iterate(F, X), infinite}),
            ?LET(Term, term(),
                 {streams:repeat(Term), infinite}),
-           ?LET({Term, N}, {term(), choose(1, 100)},
+           ?LET({Term, N}, {term(), choose(1, ?N)},
                 {streams:replicate(N, Term), N}),
            ?LET(List, non_empty(list(term())),
                 {streams:cycle(List), infinite}),
            {streams:natural(), infinite},
            ?LET(N, choose(1, 1000),
                 {streams:random(N), infinite})]).
+
+manipulated_stream() ->
+    oneof([?LET({S, N}, simple_stream(),
+                {streams:map(fun(X) -> X end, S), N}),
+           ?LET({S, N}, simple_stream(),
+                {streams:intersperse(0, S),
+                 case N of
+                     infinite ->
+                         infinite;
+                     N ->
+                         N * 2 - 1
+                 end})]).
 
 term() ->
     oneof([binary(),

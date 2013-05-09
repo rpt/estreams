@@ -33,6 +33,10 @@
          tail/1, tl/1,
          is_finished/1]).
 
+%% Manipulate
+-export([map/2,
+         intersperse/2]).
+
 %% Common streams
 -export([natural/0,
          random/1]).
@@ -151,14 +155,42 @@ is_finished(_Stream) ->
     false.
 
 %%------------------------------------------------------------------------------
-%% TODO: Manipulate
+%% Manipulate
 %%------------------------------------------------------------------------------
 
-%% -spec map(F :: fun((term()) -> term()), S :: stream()) -> S2 :: stream().
-%% map(F, Stream) ->
+%% @doc Returns a stream obtained by applying F to each element of a stream S.
+-spec map(F :: fun((term()) -> term()), S :: stream()) -> S2 :: stream().
+map(_, finish) ->
+    finish;
+map(F, Stream) ->
+    Map = fun(S, Map) ->
+                  {Value, NewStream} = S(),
+                  NewValue = F(Value),
+                  case is_finished(NewStream) of
+                      true ->
+                          {NewValue, finish};
+                      false ->
+                          {NewValue, fun() -> Map(NewStream, Map) end}
+                  end
+              end,
+    fun() -> Map(Stream, Map) end.
 
-%% -spec intersperse(X :: term(), S :: stream()) -> S2 :: stream().
-%% intersperse(X, Stream) ->
+%% @doc Takes an element X and inserts it between the elements of a stream S.
+-spec intersperse(X :: term(), S :: stream()) -> S2 :: stream().
+intersperse(_, finish) ->
+    finish;
+intersperse(X, Stream) ->
+    Inter = fun(S, Inter) ->
+                    {Value, NewStream} = S(),
+                    case is_finished(NewStream) of
+                        true ->
+                            {Value, finish};
+                        false ->
+                            NewerStream = fun() -> Inter(NewStream, Inter) end,
+                            {Value, fun() -> {X, NewerStream} end}
+                    end
+            end,
+    fun() -> Inter(Stream, Inter) end.
 
 %% -spec foldl(F :: fun((term(), term()) -> term()),
 %%             X :: term(), S :: stream()) -> S2 :: stream().
