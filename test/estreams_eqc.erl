@@ -24,6 +24,7 @@
          prop_arithmetic_progression_sum/0,
          prop_geometric_series/0,
          prop_geometric_series_sum/0,
+         prop_fibonacci_sequence/0,
          prop_take_stream_elements/0]).
 
 -include_lib("eqc/include/eqc.hrl").
@@ -94,6 +95,20 @@ prop_geometric_series_sum() ->
                 Sum == Sn)
          end)).
 
+prop_fibonacci_sequence() ->
+    eqc:numtests(
+      ?TESTS,
+      ?FORALL(
+         N, choose(0, 1000),
+         begin
+             Stream = streams:fibonacci(),
+             Nth = streams:nth(N + 1, Stream),
+             FibN = fibonacci(N),
+             ?WHENFAIL(
+                io:format("~p /= ~p~n", [Nth, FibN]),
+                Nth == FibN)
+         end)).
+
 prop_take_stream_elements() ->
     eqc:numtests(
       ?TESTS,
@@ -131,7 +146,8 @@ simple_stream() ->
                 {streams:cycle(List), infinite}),
            {streams:natural(), infinite},
            ?LET(N, choose(1, 1000),
-                {streams:random(N), infinite})]).
+                {streams:random(N), infinite}),
+           {streams:fibonacci(), infinite}]).
 
 manipulated_stream() ->
     oneof([?LET({S, N}, simple_stream(),
@@ -163,3 +179,19 @@ int_pow(X, Y) -> int_pow(X, Y, 1).
 
 int_pow(_, 0, Z) -> Z;
 int_pow(X, Y, Z) -> int_pow(X, Y - 1, Z * X).
+
+fibonacci(N) ->
+    {A, _} = fibonacci2(N),
+    A.
+
+fibonacci2(0) -> {0, 1};
+fibonacci2(N) ->
+    {A, B} = fibonacci2(N div 2),
+    C = A * (2 * B - A),
+    D = B * B + A * A,
+    if
+        N rem 2 == 0 ->
+            {C, D};
+        true ->
+            {D, C + D}
+    end.

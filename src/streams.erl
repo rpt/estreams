@@ -39,7 +39,8 @@
 
 %% Common streams
 -export([natural/0,
-         random/1]).
+         random/1,
+         fibonacci/0]).
 
 %% Types
 -export_type([stream/0]).
@@ -216,3 +217,12 @@ natural() ->
 -spec random(N :: integer()) -> S :: stream().
 random(N) ->
     iterate(fun(_) -> random:uniform(N) end, random:uniform(N)).
+
+%% @doc Returns a stream of Fibonacci sequence numbers.
+-spec fibonacci() -> S :: stream().
+fibonacci() ->
+    Fib = fun(Min2, Min1, Fib) ->
+                  NewMin = Min2 + Min1,
+                  {NewMin, fun() -> Fib(Min1, NewMin, Fib) end}
+          end,
+    fun() -> {0, fun() -> {1, fun() -> Fib(0, 1, Fib) end} end} end.

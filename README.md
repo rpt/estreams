@@ -175,6 +175,17 @@ Inspired by Haskell's infinite lists. Tested with QuickCheck (mini).
     [5,8,10,6,4,6,10,7,5,6]
     ```
 
+ * **fibonacci/0** - Returns a stream of Fibonacci sequence numbers.
+
+    ``` erlang
+    fibonacci() -> S :: stream().
+    ```
+
+    ``` erlang
+    x> streams:take(10, streams:fibonacci()).
+    [0,1,1,2,3,5,8,13,21,34]
+    ```
+
 ## TODO
 
  * More functions to create, use and manipulate streams
