@@ -220,10 +220,8 @@ Inspired by Haskell's infinite lists. Tested with QuickCheck (mini).
 ## Note
 
 For the `eqcmini` tests to work this project uses a customized version of
-`rebar` compiled with R13B04. A [pull request][rebar_pr] with the changes
-was made to `rebar/rebar` some time ago, but apparently no one maintains
-it anymore.
+`rebar` compiled with R13B04. The changes were merged into the official
+`rebar/rebar` repository with rebar/rebar#75.
 
 [travis_ci]: http://travis-ci.org/rpt/estreams
 [travis_ci_image]: https://secure.travis-ci.org/rpt/estreams.png
-[rebar_pr]: https://github.com/rebar/rebar/pull/75
